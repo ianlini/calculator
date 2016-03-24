@@ -6,11 +6,9 @@ class CalcApp extends React.Component {
       display: '0',
       lastOperand: 0
     };
-    this.operand = 0;
-    this.precision = -1;
+    this.clearCurrentOperand();
     this.lastOperand = null;
     this.operator = null;
-    this.negativeSign = false;
     this.isLastEqual = false;
   }
 
@@ -22,11 +20,20 @@ class CalcApp extends React.Component {
     this.setState({display: 0});
   }
 
+  clearCurrentOperand() {
+    this.operand = 0;
+    this.precision = -1;
+    this.negativeSign = false;
+    this.isLastOperator = true;
+  }
+
   showNotImplemented() {
     console.warn('This function is not implemented yet.');
   }
 
   clickSign() {
+    if (this.isLastEqual)
+      this.resetState()
     this.negativeSign = !this.negativeSign;
     this.refreshDisplay();
   }
@@ -65,6 +72,10 @@ class CalcApp extends React.Component {
   }
 
   inputOperand(input) {
+    this.isLastOperator = false;
+    if (this.isLastEqual) {
+      this.resetState()
+    }
     if (typeof input === 'number') {
       this.operand = this.operand*10 + input;
       if (this.precision !== -1)
@@ -82,26 +93,33 @@ class CalcApp extends React.Component {
   }
 
   clickPercent() {
-    if (this.precision === -1)
-      this.precision = 2
-    else
-      this.precision += 2;
-    this.refreshDisplay();
-  }
-
-  clearCurrentOperand() {
-    this.operand = 0;
-    this.precision = -1;
-    this.negativeSign = false;
+    if (this.isLastEqual) {
+      this.lastOperand *= 0.01;
+      this.setState({display: this.lastOperand});
+    }
+    else {
+      if (this.precision === -1)
+        this.precision = 2
+      else
+        this.precision += 2;
+      this.refreshDisplay();
+    }
   }
 
   clickOperator(operator) {
-    if (this.lastOperand !== null || operator === '=') {
+    if (operator !== '=') {
+      if (this.isLastOperator) {
+        this.operator = operator;
+        return;
+      }
+      else
+        this.isLastOperator = true;
+    }
+    if (this.lastOperand !== null) {
       this.evaluate(operator);
     }
-    else {
+    else if (operator !== '=') {
       this.lastOperand = this.getOperand(this.operand, this.precision)
-      console.log(this.lastOperand)
       this.operator = operator;
       this.clearCurrentOperand();
     }
@@ -142,6 +160,7 @@ class CalcApp extends React.Component {
   }
 
   render() {
+    console.log(this.state.display);
     return (
       <div className="calc-app">
         <div className="calc-container">
