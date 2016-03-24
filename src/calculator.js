@@ -11,20 +11,20 @@ class CalcApp extends React.Component {
     this.lastOperand = null;
     this.operator = null;
     this.negativeSign = false;
+    this.isLastEqual = false;
   }
 
   resetState() {
-    this.operand = 0;
-    this.precision = -1;
+    this.clearCurrentOperand()
     this.lastOperand = null;
     this.operator = null;
-    this.negativeSign = false;
+    this.isLastEqual = false;
     this.setState({display: 0});
   }
 
   showNotImplemented() {
-      console.warn('This function is not implemented yet.');
-    }
+    console.warn('This function is not implemented yet.');
+  }
 
   clickSign() {
     this.negativeSign = !this.negativeSign;
@@ -89,6 +89,12 @@ class CalcApp extends React.Component {
     this.refreshDisplay();
   }
 
+  clearCurrentOperand() {
+    this.operand = 0;
+    this.precision = -1;
+    this.negativeSign = false;
+  }
+
   clickOperator(operator) {
     if (this.lastOperand !== null || operator === '=') {
       this.evaluate(operator);
@@ -97,10 +103,13 @@ class CalcApp extends React.Component {
       this.lastOperand = this.getOperand(this.operand, this.precision)
       console.log(this.lastOperand)
       this.operator = operator;
-      this.operand = 0;
-      this.precision = -1;
-      this.negativeSign = false;
+      this.clearCurrentOperand();
     }
+
+    if (operator === '=')
+      this.isLastEqual = true;
+    else
+      this.isLastEqual = false;
   }
 
   getOperand(operand, precision) {
@@ -113,21 +122,21 @@ class CalcApp extends React.Component {
 
   evaluate(operator) {
     let operand = this.getOperand(this.operand, this.precision);
-    switch(this.operator) {
-      case '+':
-        this.lastOperand += operand; break;
-      case '-':
-        this.lastOperand -= operand; break;
-      case '×':
-        this.lastOperand *= operand; break;
-      case '÷':
-        this.lastOperand /= operand; break;
+    if (operator === '=' || !this.isLastEqual) {
+      switch(this.operator) {
+        case '+':
+          this.lastOperand += operand; break;
+        case '-':
+          this.lastOperand -= operand; break;
+        case '×':
+          this.lastOperand *= operand; break;
+        case '÷':
+          this.lastOperand /= operand; break;
+      }
     }
     if (operator !== '=') {
       this.operator = operator;
-      this.operand = 0;
-      this.precision = -1;
-      this.negativeSign = false;
+      this.clearCurrentOperand();
     }
     this.setState({display: this.lastOperand})
   }
