@@ -10,6 +10,7 @@ class CalcApp extends React.Component {
     this.precision = -1;
     this.lastOperand = null;
     this.operator = null;
+    this.negativeSign = false;
   }
 
   resetState() {
@@ -17,12 +18,18 @@ class CalcApp extends React.Component {
     this.precision = -1;
     this.lastOperand = null;
     this.operator = null;
+    this.negativeSign = false;
     this.setState({display: 0});
   }
 
   showNotImplemented() {
       console.warn('This function is not implemented yet.');
     }
+
+  clickSign() {
+    this.negativeSign = !this.negativeSign;
+    this.refreshDisplay();
+  }
 
   leftpad (str, len, ch) {
     str = String(str);
@@ -52,6 +59,8 @@ class CalcApp extends React.Component {
       else
         display = operandStr.substring(0,pointPosition) + '.' + operandStr.substring(pointPosition);
     }
+    if (this.negativeSign)
+      display = '-' + display;
     this.setState({display: display});
   }
 
@@ -90,12 +99,15 @@ class CalcApp extends React.Component {
       this.operator = operator;
       this.operand = 0;
       this.precision = -1;
+      this.negativeSign = false;
     }
   }
 
   getOperand(operand, precision) {
     if (this.precision !== -1)
-      operand *= Math.pow(10, -precision)
+      operand *= Math.pow(10, -precision);
+    if (this.negativeSign)
+      operand = -operand;
     return operand;
   }
 
@@ -112,9 +124,10 @@ class CalcApp extends React.Component {
         this.lastOperand /= operand; break;
     }
     if (operator !== '=') {
+      this.operator = operator;
       this.operand = 0;
       this.precision = -1;
-      this.operator = operator;
+      this.negativeSign = false;
     }
     this.setState({display: this.lastOperand})
   }
@@ -128,7 +141,7 @@ class CalcApp extends React.Component {
           </div>
           <div className="calc-row">
             <CalcButton onClick={this.resetState.bind(this)}>AC</CalcButton>
-            <CalcButton onClick={this.showNotImplemented.bind(this)}>+/-</CalcButton>
+            <CalcButton onClick={this.clickSign.bind(this)}>+/-</CalcButton>
             <CalcButton onClick={this.clickPercent.bind(this)}>%</CalcButton>
             <CalcButton className="calc-operator" onClick={this.clickOperator.bind(this, '÷')}>÷</CalcButton>
           </div>
